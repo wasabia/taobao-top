@@ -89,10 +89,14 @@ module Taobao
       def invoke method, http_method, *args
         prepare_params @options.merge(args.extract_options!).merge(method: method)
         begin
+
           raw_response = case http_method
-          when :get then RestClient.get [TOP.gateways[:site], @params.to_query].join("?")
-          when :post then RestClient.post TOP.gateways[:site], @params
+            when :get
+              RestClient::Request.execute(:url => [TOP.gateways[:site], @params.to_query].join("?"), :method => :get, :verify_ssl => false)
+            when :post
+              RestClient::Request.execute(:url => TOP.gateways[:site], :params => @params, :method => :post, :verify_ssl => false)
           end
+
           @response = case @params.format.to_s.downcase
           when 'json'
             TOP::Response.from_json(raw_response)
